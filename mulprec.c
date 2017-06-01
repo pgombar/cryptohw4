@@ -1,9 +1,11 @@
 #include <inttypes.h>
 #include <stdio.h>
+#include "mulprec.h"
+#include "test.h"
 
 /* 256-bit integers in radix 2^16 */
 
-typedef uint64_t bigint[16];
+
 
 void mul_prodscan(uint64_t r[31], const bigint x, const bigint y) {
 
@@ -110,17 +112,6 @@ void init(bigint x) {
     for (i = 0; i < 16; i++) x[i] = 0;
 }
 
-int main(void) {
-    bigint a, b;
-    init(a); init(b);
-    
-    uint64_t c[31];
-    int i;
-    for (i = 0; i < 31; i++) c[i] = 0;
-
-    a[0] = 2; a[1] = 3; a[2] = 4; // 432
-    b[0] = 5; b[1] = 8; b[2] = 2; // 285
-    mul_prodscan(c, a, b);
-    
-    print_(c);
+int main() {
+    runAllTest();
 }
