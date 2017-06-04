@@ -1,13 +1,17 @@
 #include <inttypes.h>
 #include <stdio.h>
-#include "mulprec.h"
-#include "test.h"
+#include <math.h>
+#include <string.h>
+
+#define LEN 16
+#define MLEN 31
+#define BASE 10
 
 /* 256-bit integers in radix 2^16 */
+typedef uint64_t bigint[LEN]; // 14*16 = 224
 
 
-
-void mul_prodscan(uint64_t r[31], const bigint x, const bigint y) {
+void mul_prodscan(uint64_t r[MLEN], const bigint x, const bigint y) {
 
     r[0] = x[0] * y[0];
     r[1] = x[1] * y[0] + x[0] * y[1];
@@ -99,19 +103,112 @@ void mul_prodscan(uint64_t r[31], const bigint x, const bigint y) {
     r[30] = x[15] * y[15];
 }
 
-void print_(uint64_t r[31]) {
+// modular reduction: 3 * 2^3 = 24 (like slide 4 from ecc.pdf)
+void mod_reduction(uint64_t r[MLEN]) {
     int i;
-    for (i = 30; i >= 0; i--) {
+    for (i = 0; i < LEN-1; i++) r[i] += 24 * r[i+LEN];
+}
+
+void carry(uint64_t r[MLEN]) {
+    int i;
+    for (i = 0; i < MLEN-2; i++) {
+        uint64_t prev_carry = r[i] >> LEN; 
+        int shift = sizeof(uint64_t)*8 - LEN;
+        r[i] = r[i] << shift >> shift; // clear all but the first 16 bits
+        r[i+1] += prev_carry;
+    }
+}
+
+// =================================================
+// HELPER FUNCTIONS
+void init(uint64_t *x, int SIZE) {
+    int i;
+    for (i = 0; i < SIZE; i++) x[i] = 0;
+}
+
+int bit_degree(uint64_t a) {
+    int r = 0;
+    while (a >>= 1) {
+        r++;
+    }
+    return r;
+}
+
+void print_(uint64_t r[MLEN]) {
+    int i;
+    for (i = MLEN-1; i >= 0; i--) {
         printf("%" PRIu64 " ", r[i]);
     }
     printf("\n");
 }
 
-void init(bigint x) {
+void string_(const uint64_t *x, int SIZE) {
     int i;
-    for (i = 0; i < 16; i++) x[i] = 0;
+    for (i = 0; i < SIZE; i++) {
+        printf("%d * (%d ^ %d)", x[i], BASE, i);
+        if (i < SIZE-1) {
+            printf(" + ");
+        }
+    }
+    // printf("\n");
 }
 
-int main() {
-    runAllTest();
+void interpret_(const uint64_t *x) {
+    int s = 0, i;
+    for (i = 0; i < MLEN; i++) {
+        s += x[i] * pow(BASE, i);
+    }
+    printf("%d\n", s);
+}
+// =================================================
+
+// Product-scanning multiplication.
+void test_1a(bigint a, bigint b, uint64_t *c) {
+    mul_prodscan(c, a, b);
+
+    // c - ((a) * (b))
+    string_(c, MLEN); printf(" - (("); string_(a, LEN); printf(") * (");
+    string_(b, LEN); printf("))\n");
+}
+
+// Modular reduction after multiplication.
+void test_1d(bigint a, bigint b, uint64_t *c) {
+    mul_prodscan(c, a, b);
+    mod_reduction(c);
+
+    // c - ((a*b) % p)
+    string_(c, MLEN); printf(" - (("); string_(a, LEN); printf(") * (");
+    string_(b, LEN); printf(") %% (2 ^ 221 - 3))\n");
+}
+
+// Implement a carry routine after modular multiplication:
+// multiply, reduce, carry, reduce, reduce
+void test1_e(bigint a, bigint b, uint64_t *c) {
+    mul_prodscan(c, a, b);
+    mod_reduction(c);
+    carry(c);
+    mod_reduction(c); mod_reduction(c);
+
+    int i, flag = 1;
+    for (i = 0; i < MLEN; i++) {
+        if (bit_degree(c[i]) >= 17) flag = 0;
+    }
+    printf("%d\n", 1 - flag);
+    // TODO: add check for 20 bits for a and b (isn't it only up to 16 bits?)
+    // printf("%s\n", flag ? "TRUE" : "FALSE");
+}
+
+int main(void) {
+    bigint a, b;
+    init(a, LEN); init(b, LEN);
+    
+    uint64_t c[MLEN], d[MLEN];
+    init(c, MLEN); init(d, MLEN);
+
+    a[0] = 2; a[1] = 3; a[2] = 4; // 432
+    b[0] = 5; b[1] = 8; b[2] = 2; // 285
+
+    test_1a(a, b, c);
+    test_1d(a, b, c);
+    test1_e(a, b, c);
 }
