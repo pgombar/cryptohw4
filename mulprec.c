@@ -3,15 +3,15 @@
 #include <math.h>
 #include <string.h>
 
-#define LEN 16
-#define MLEN 31
+#define LEN 14
+#define MLEN 27
 #define BASE 10
 
 /* 256-bit integers in radix 2^16 */
-typedef uint64_t bigint[LEN]; // 14*16 = 224
+typedef int64_t bigint[LEN]; // 14*16 = 224
 
 
-void mul_prodscan(uint64_t r[MLEN], const bigint x, const bigint y) {
+void mul_prodscan(int64_t r[MLEN], const bigint x, const bigint y) {
 
     r[0] = x[0] * y[0];
     r[1] = x[1] * y[0] + x[0] * y[1];
@@ -46,74 +46,58 @@ void mul_prodscan(uint64_t r[MLEN], const bigint x, const bigint y) {
             x[7] * y[5] + x[6] * y[6] + x[5] * y[7] + x[4] * y[8] + x[3] * y[9] + \
             x[2] * y[10] + x[1] * y[11] + x[0] * y[12];
 
+
     r[13] = x[13] * y[0] + x[12] * y[1] + x[11] * y[2] + x[10] * y[3] + x[9] * y[4] + \
             x[8] * y[5] + x[7] * y[6] + x[6] * y[7] + x[5] * y[8] + x[4] * y[9] + \
             x[3] * y[10] + x[2] * y[11] + x[1] * y[12] + x[0] * y[13];
 
-    r[14] = x[14] * y[0] + x[13] * y[1] + x[12] * y[2] + x[11] * y[3] + x[10] * y[4] + \
-            x[9] * y[5] + x[8] * y[6] + x[7] * y[7] + x[6] * y[8] + x[5] * y[9] + \
-            x[4] * y[10] + x[3] * y[11] + x[2] * y[12] + x[1] * y[13] + x[0] * y[14];
 
+    r[14] = x[13] * y[1] + x[12] * y[2] + x[11] * y[3] + x[10] * y[4] + x[9] * y[5] + \
+            x[8] * y[6] + x[7] * y[7] + x[6] * y[8] + x[5] * y[9] + x[4] * y[10] + \
+            x[3] * y[11] + x[2] * y[12] + x[1] * y[13];
 
-    r[15] = x[15] * y[0] + x[14] * y[1] + x[13] * y[2] + x[12] * y[3] + x[11] * y[4] + \
-            x[10] * y[5] + x[9] * y[6] + x[8] * y[7] + x[7] * y[8] + x[6] * y[9] + \
-            x[5] * y[10] + x[4] * y[11] + x[3] * y[12] + x[2] * y[13] + x[1] * y[14] + \
-            x[0] * y[15];
+    r[15] = x[13] * y[2] + x[12] * y[3] + x[11] * y[4] + x[10] * y[5] + x[9] * y[6] + \
+            x[8] * y[7] + x[7] * y[8] + x[6] * y[9] + x[5] * y[10] + x[4] * y[11] + \
+            x[3] * y[12] + x[2] * y[13];
 
+    r[16] = x[13] * y[3] + x[12] * y[4] + x[11] * y[5] + x[10] * y[6] + x[9] * y[7] + \
+            x[8] * y[8] + x[7] * y[9] + x[6] * y[10] + x[5] * y[11] + x[4] * y[12] + \
+            x[3] * y[13];
 
-    r[16] = x[15] * y[1] + x[14] * y[2] + x[13] * y[3] + x[12] * y[4] + x[11] * y[5] + \
-            x[10] * y[6] + x[9] * y[7] + x[8] * y[8] + x[7] * y[9] + x[6] * y[10] + \
-            x[5] * y[11] + x[4] * y[12] + x[3] * y[13] + x[2] * y[14] + x[1] * y[15];
+    r[17] = x[13] * y[4] + x[12] * y[5] + x[11] * y[6] + x[10] * y[7] + x[9] * y[8] + \
+            x[8] * y[9] + x[7] * y[10] + x[6] * y[11] + x[5] * y[12] + x[4] * y[13];
 
-    r[17] = x[15] * y[2] + x[14] * y[3] + x[13] * y[4] + x[12] * y[5] + x[11] * y[6] + \
-            x[10] * y[7] + x[9] * y[8] + x[8] * y[9] + x[7] * y[10] + x[6] * y[11] + \
-            x[5] * y[12] + x[4] * y[13] + x[3] * y[14] + x[2] * y[15];
+    r[18] = x[13] * y[5] + x[12] * y[6] + x[11] * y[7] + x[10] * y[8] + x[9] * y[9] + \
+            x[8] * y[10] + x[7] * y[11] + x[6] * y[12] + x[5] * y[13];
 
-    r[18] = x[15] * y[3] + x[14] * y[4] + x[13] * y[5] + x[12] * y[6] + x[11] * y[7] + \
-            x[10] * y[8] + x[9] * y[9] + x[8] * y[10] + x[7] * y[11] + x[6] * y[12] + \
-            x[5] * y[13] + x[4] * y[14] + x[3] * y[15];
+    r[19] = x[13] * y[6] + x[12] * y[7] + x[11] * y[8] + x[10] * y[9] + x[9] * y[10] + \
+            x[8] * y[11] + x[7] * y[12] + x[6] * y[13];
 
-    r[19] = x[15] * y[4] + x[14] * y[5] + x[13] * y[6] + x[12] * y[7] + x[11] * y[8] + \
-            x[10] * y[9] + x[9] * y[10] + x[8] * y[11] + x[7] * y[12] + x[6] * y[13] + \
-            x[5] * y[14] + x[4] * y[15];
+    r[20] = x[13] * y[7] + x[12] * y[8] + x[11] * y[9] + x[10] * y[10] + x[9] * y[11] + \
+            x[8] * y[12] + x[7] * y[13];
 
-    r[20] = x[15] * y[5] + x[14] * y[6] + x[13] * y[7] + x[12] * y[8] + x[11] * y[9] + \
-            x[10] * y[10] + x[9] * y[11] + x[8] * y[12] + x[7] * y[13] + x[6] * y[14] + \
-            x[5] * y[15];
+    r[21] = x[13] * y[8] + x[12] * y[9] + x[11] * y[10] + x[10] * y[11] + x[9] * y[12] + \
+            x[8] * y[13];
 
-    r[21] = x[15] * y[6] + x[14] * y[7] + x[13] * y[8] + x[12] * y[9] + x[11] * y[10] + \
-            x[10] * y[11] + x[9] * y[12] + x[8] * y[13] + x[7] * y[14] + x[6] * y[15];
-
-    r[22] = x[15] * y[7] + x[14] * y[8] + x[13] * y[9] + x[12] * y[10] + x[11] * y[11] + \
-            x[10] * y[12] + x[9] * y[13] + x[8] * y[14] + x[7] * y[15];
-
-    r[23] = x[15] * y[8] + x[14] * y[9] + x[13] * y[10] + x[12] * y[11] + x[11] * y[12] + \
-            x[10] * y[13] + x[9] * y[14] + x[8] * y[15];
-
-    r[24] = x[15] * y[9] + x[14] * y[10] + x[13] * y[11] + x[12] * y[12] + x[11] * y[13] + \
-            x[10] * y[14] + x[9] * y[15];
-
-    r[25] = x[15] * y[10] + x[14] * y[11] + x[13] * y[12] + x[12] * y[13] + x[11] * y[14] + \
-            x[10] * y[15];
-
-    r[26] = x[15] * y[11] + x[14] * y[12] + x[13] * y[13] + x[12] * y[14] + x[11] * y[15];
-    r[27] = x[15] * y[12] + x[14] * y[13] + x[13] * y[14] + x[12] * y[15];
-    r[28] = x[15] * y[13] + x[14] * y[14] + x[13] * y[15];
-    r[29] = x[15] * y[14] + x[14] * y[15];
-    r[30] = x[15] * y[15];
+    r[22] = x[13] * y[9] + x[12] * y[10] + x[11] * y[11] + x[10] * y[12] + x[9] * y[13];
+    r[23] = x[13] * y[10] + x[12] * y[11] + x[11] * y[12] + x[10] * y[13];
+    r[24] = x[13] * y[11] + x[12] * y[12] + x[11] * y[13];
+    r[25] = x[13] * y[12] + x[12] * y[13];
+    r[26] = x[13] * y[13] + x[12];
+    r[27] = y[13] + x[13];
 }
 
 // modular reduction: 3 * 2^3 = 24 (like slide 4 from ecc.pdf)
-void mod_reduction(uint64_t r[MLEN]) {
+void mod_reduction(int64_t r[MLEN]) {
     int i;
     for (i = 0; i < LEN-1; i++) r[i] += 24 * r[i+LEN];
 }
 
-void carry(uint64_t r[MLEN]) {
+void carry(int64_t r[MLEN]) {
     int i;
     for (i = 0; i < MLEN-2; i++) {
-        uint64_t prev_carry = r[i] >> LEN; 
-        int shift = sizeof(uint64_t)*8 - LEN;
+        int64_t prev_carry = r[i] >> LEN; 
+        int shift = sizeof(int64_t)*8 - LEN;
         r[i] = r[i] << shift >> shift; // clear all but the first 16 bits
         r[i+1] += prev_carry;
     }
@@ -121,28 +105,28 @@ void carry(uint64_t r[MLEN]) {
 
 // =================================================
 // HELPER FUNCTIONS
-void init(uint64_t *x, int SIZE) {
+void init(int64_t *x, int SIZE) {
     int i;
     for (i = 0; i < SIZE; i++) x[i] = 0;
 }
 
-int bit_degree(uint64_t a) {
+int bit_degree(int64_t a) {
     int r = 0;
-    while (a >>= 1) {
+    while (a >>= 1 && a) {
         r++;
     }
     return r;
 }
 
-void print_(uint64_t r[MLEN]) {
+void print_(int64_t r[MLEN]) {
     int i;
     for (i = MLEN-1; i >= 0; i--) {
-        printf("%" PRIu64 " ", r[i]);
+        printf("%" PRId64 " ", r[i]);
     }
     printf("\n");
 }
 
-void string_(const uint64_t *x, int SIZE) {
+void string_(const int64_t *x, int SIZE) {
     int i;
     for (i = 0; i < SIZE; i++) {
         printf("%d * (%d ^ %d)", x[i], BASE, i);
@@ -153,7 +137,7 @@ void string_(const uint64_t *x, int SIZE) {
     // printf("\n");
 }
 
-void interpret_(const uint64_t *x) {
+void interpret_(const int64_t *x) {
     int s = 0, i;
     for (i = 0; i < MLEN; i++) {
         s += x[i] * pow(BASE, i);
@@ -163,7 +147,7 @@ void interpret_(const uint64_t *x) {
 // =================================================
 
 // Product-scanning multiplication.
-void test_1a(bigint a, bigint b, uint64_t *c) {
+void test_1a(bigint a, bigint b, int64_t *c) {
     mul_prodscan(c, a, b);
 
     // c - ((a) * (b))
@@ -172,7 +156,7 @@ void test_1a(bigint a, bigint b, uint64_t *c) {
 }
 
 // Modular reduction after multiplication.
-void test_1d(bigint a, bigint b, uint64_t *c) {
+void test_1d(bigint a, bigint b, int64_t *c) {
     mul_prodscan(c, a, b);
     mod_reduction(c);
 
@@ -183,7 +167,7 @@ void test_1d(bigint a, bigint b, uint64_t *c) {
 
 // Implement a carry routine after modular multiplication:
 // multiply, reduce, carry, reduce, reduce
-void test1_e(bigint a, bigint b, uint64_t *c) {
+void test1_e(bigint a, bigint b, int64_t *c) {
     mul_prodscan(c, a, b);
     mod_reduction(c);
     carry(c);
@@ -202,7 +186,7 @@ int main(void) {
     bigint a, b;
     init(a, LEN); init(b, LEN);
     
-    uint64_t c[MLEN], d[MLEN];
+    int64_t c[MLEN], d[MLEN];
     init(c, MLEN); init(d, MLEN);
 
     a[0] = 2; a[1] = 3; a[2] = 4; // 432
@@ -211,4 +195,6 @@ int main(void) {
     test_1a(a, b, c);
     test_1d(a, b, c);
     test1_e(a, b, c);
+
+    return 0;
 }
