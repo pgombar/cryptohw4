@@ -4,13 +4,15 @@
 
 #include <stdio.h>
 #include "mulprec.h"
+#include "utilities.h"
+#include "test.h"
 
 int test_multprec(){
     int result = 0;
 
     bigint a, b;
-    init(a);
-    init(b);
+    init(a, LEN);
+    init(b, LEN);
 
     uint64_t c[31];
     int i;
@@ -57,10 +59,113 @@ int test_multprec(){
     return result;
 }
 
+// Product-scanning multiplication.
+void test_1a() {
+    bigint a, b;
+    init(a, LEN);
+    init(b, LEN);
+
+    int64_t c[MLEN];
+    init(c, MLEN);
+
+    a[0] = 2; a[1] = 3; a[2] = 4; // 432
+    b[0] = 5; b[1] = 8; b[2] = 2; // 285
+
+    mul_prodscan(c, a, b);
+
+    // c - ((a) * (b))
+    string_(c, MLEN); printf(" - (("); string_(a, LEN); printf(") * (");
+    string_(b, LEN); printf("))\n");
+}
+
+// Modular reduction after multiplication.
+void test_1d() {
+    bigint a, b;
+    init(a, LEN);
+    init(b, LEN);
+
+    int64_t c[MLEN];
+    init(c, MLEN);
+
+    a[0] = 2; a[1] = 3; a[2] = 4; // 432
+    b[0] = 5; b[1] = 8; b[2] = 2; // 285
+
+    mul_prodscan(c, a, b);
+    mod_reduction(c);
+
+    // c - ((a*b) % p)
+    string_(c, MLEN); printf(" - (("); string_(a, LEN); printf(") * (");
+    string_(b, LEN); printf(") %% (2 ^ 221 - 3))\n");
+}
+
+// Implement a carry routine after modular multiplication:
+// multiply, reduce, carry, reduce, reduce
+void test1_e() {
+    bigint a, b;
+    init(a, LEN);
+    init(b, LEN);
+
+    int64_t c[MLEN];
+    init(c, MLEN);
+
+    a[0] = 2; a[1] = 3; a[2] = 4; // 432
+    b[0] = 5; b[1] = 8; b[2] = 2; // 285
+
+    mul_prodscan(c, a, b);
+    mod_reduction(c);
+    carry(c);
+    mod_reduction(c); mod_reduction(c);
+
+    int i, flag = 1;
+    for (i = 0; i < MLEN; i++) {
+        if (bit_degree(c[i]) >= 17) flag = 0;
+    }
+    printf("%d\n", 1 - flag);
+    // TODO: add check for 20 bits for a and b (isn't it only up to 16 bits?)
+    // printf("%s\n", flag ? "TRUE" : "FALSE");
+}
+
+void test_1b() {
+    bigint a, b;
+    init(a, LEN);
+    init(b, LEN);
+
+    int64_t c[MLEN];
+    init(c, MLEN);
+
+    int i;
+    for (i = 0; i < LEN; ++i) {
+        a[i] = 9;
+    }
+    b[0]=2;
+
+
+
+    mul_karatsuba(c, a, b);
+
+    // c - ((a) * (b))
+    string_(c, MLEN); printf(" - (("); string_(a, LEN); printf(") * (");
+    string_(b, LEN); printf("))\n");
+}
+
 void runAllTest(){
     if (!test_multprec()){
         printf("Test 1 passed !");
     } else{
         printf("Test 1 failed...");
     }
+
+    printf("\n\n\ntest_1a\n");
+    test_1a();
+
+    printf("\n\n\ntest_1b\n");
+    test_1b();
+
+    printf("\n\n\ntest_1d\n");
+    test_1d();
+
+    printf("\n\n\ntest_1e\n");
+    test1_e();
+
 }
+

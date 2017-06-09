@@ -7,15 +7,20 @@
 
 #include <stdint.h>
 
-typedef uint64_t bigint[16];
+#define LEN 14
+#define MLEN 27
+#define BASE 10
+
+/* 256-bit integers in radix 2^16 */
+typedef int64_t bigint[LEN]; // 14*16 = 224
 
 //Made a multiplication
-void mul_prodscan(uint64_t r[31], const bigint x, const bigint y);
+void mul_prodscan(int64_t r[MLEN], const bigint x, const bigint y);
 
-//Display a result on the terminal
-void print_(uint64_t r[31]);
+void mul_karatsuba(int64_t r[MLEN], const bigint x, const bigint y);
 
-//Initialise the bigint writing 0 in each cells
-void init(bigint x);
+void mod_reduction(int64_t r[MLEN]);
+
+void carry(int64_t r[MLEN]);
 
 #endif //CRYPTOHW4_MULPREC_H

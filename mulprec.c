@@ -1,16 +1,12 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <math.h>
-#include <string.h>
-
-#define LEN 14
-#define MLEN 27
-#define BASE 10
-
-/* 256-bit integers in radix 2^16 */
-typedef int64_t bigint[LEN]; // 14*16 = 224
+#include "mulprec.h"
+#include "test.h"
+#include "utilities.h"
 
 
+//(a)
 void mul_prodscan(int64_t r[MLEN], const bigint x, const bigint y) {
 
     r[0] = x[0] * y[0];
@@ -83,16 +79,17 @@ void mul_prodscan(int64_t r[MLEN], const bigint x, const bigint y) {
     r[23] = x[13] * y[10] + x[12] * y[11] + x[11] * y[12] + x[10] * y[13];
     r[24] = x[13] * y[11] + x[12] * y[12] + x[11] * y[13];
     r[25] = x[13] * y[12] + x[12] * y[13];
-    r[26] = x[13] * y[13] + x[12];
-    r[27] = y[13] + x[13];
+    r[26] = x[13] * y[13];
 }
 
+//(d)
 // modular reduction: 3 * 2^3 = 24 (like slide 4 from ecc.pdf)
 void mod_reduction(int64_t r[MLEN]) {
     int i;
     for (i = 0; i < LEN-1; i++) r[i] += 24 * r[i+LEN];
 }
 
+//(e)
 void carry(int64_t r[MLEN]) {
     int i;
     for (i = 0; i < MLEN-2; i++) {
@@ -103,98 +100,65 @@ void carry(int64_t r[MLEN]) {
     }
 }
 
-// =================================================
-// HELPER FUNCTIONS
-void init(int64_t *x, int SIZE) {
+void mul_karatsuba(int64_t r[MLEN], const bigint x, const bigint y) {
+    const int m = LEN/2;
+
+    bigint x_0, x_1, y_0, y_1;
+
+    //Initialization
+    init(x_0, LEN);
+    init(x_1, LEN);
+    init(y_0, LEN);
+    init(y_1, LEN);
+
+    //Construction of our bigint
     int i;
-    for (i = 0; i < SIZE; i++) x[i] = 0;
-}
-
-int bit_degree(int64_t a) {
-    int r = 0;
-    while (a >>= 1 && a) {
-        r++;
+    for (i = 0; i < m; ++i) {
+        x_0[i] = x[i];
+        y_0[i] = y[i];
     }
-    return r;
-}
 
-void print_(int64_t r[MLEN]) {
-    int i;
-    for (i = MLEN-1; i >= 0; i--) {
-        printf("%" PRId64 " ", r[i]);
+    int j;
+    for (j = m; j < LEN; ++j) {
+        x_1[j - m] = x[j];
+        y_1[j - m] = y[j];
     }
-    printf("\n");
-}
 
-void string_(const int64_t *x, int SIZE) {
-    int i;
-    for (i = 0; i < SIZE; i++) {
-        printf("%d * (%d ^ %d)", x[i], BASE, i);
-        if (i < SIZE-1) {
-            printf(" + ");
-        }
-    }
-    // printf("\n");
-}
 
-void interpret_(const int64_t *x) {
-    int s = 0, i;
-    for (i = 0; i < MLEN; i++) {
-        s += x[i] * pow(BASE, i);
-    }
-    printf("%d\n", s);
-}
-// =================================================
+    int64_t firstMul[MLEN];
+    int64_t secondMul[MLEN];
+    int64_t thirdMul[MLEN];
+    init(firstMul, MLEN);
+    init(secondMul, MLEN);
+    init(thirdMul, MLEN);
 
-// Product-scanning multiplication.
-void test_1a(bigint a, bigint b, int64_t *c) {
-    mul_prodscan(c, a, b);
 
-    // c - ((a) * (b))
-    string_(c, MLEN); printf(" - (("); string_(a, LEN); printf(") * (");
-    string_(b, LEN); printf("))\n");
-}
 
-// Modular reduction after multiplication.
-void test_1d(bigint a, bigint b, int64_t *c) {
-    mul_prodscan(c, a, b);
-    mod_reduction(c);
+    bigint firstAddition;
+    bigint secondAddition;
+    init(firstAddition, LEN);
+    init(secondAddition, LEN);
 
-    // c - ((a*b) % p)
-    string_(c, MLEN); printf(" - (("); string_(a, LEN); printf(") * (");
-    string_(b, LEN); printf(") %% (2 ^ 221 - 3))\n");
-}
+    addition(firstAddition, x_0, x_1, LEN);
+    addition(secondAddition, y_0, y_1, LEN);
 
-// Implement a carry routine after modular multiplication:
-// multiply, reduce, carry, reduce, reduce
-void test1_e(bigint a, bigint b, int64_t *c) {
-    mul_prodscan(c, a, b);
-    mod_reduction(c);
-    carry(c);
-    mod_reduction(c); mod_reduction(c);
+    mul_prodscan(secondMul, firstAddition, secondAddition);
 
-    int i, flag = 1;
-    for (i = 0; i < MLEN; i++) {
-        if (bit_degree(c[i]) >= 17) flag = 0;
-    }
-    printf("%d\n", 1 - flag);
-    // TODO: add check for 20 bits for a and b (isn't it only up to 16 bits?)
-    // printf("%s\n", flag ? "TRUE" : "FALSE");
+    mul_prodscan(firstMul, x_0, y_0);
+    mul_prodscan(thirdMul, x_1, y_1);
+
+    substraction(secondMul, secondMul, firstMul, MLEN);
+    substraction(secondMul, secondMul, thirdMul, MLEN);
+
+
+    shift(secondMul, m);
+    shift(thirdMul, 2*m);
+
+    addition(r, firstMul, secondMul, MLEN);
+    addition(r, r, thirdMul, MLEN);
 }
 
 int main(void) {
-    bigint a, b;
-    init(a, LEN); init(b, LEN);
-    
-    int64_t c[MLEN], d[MLEN];
-    init(c, MLEN); init(d, MLEN);
-
-    a[0] = 2; a[1] = 3; a[2] = 4; // 432
-    b[0] = 5; b[1] = 8; b[2] = 2; // 285
-
-    test_1a(a, b, c);
-    test_1d(a, b, c);
-    test1_e(a, b, c);
-
+    runAllTest();
     return 0;
 }
