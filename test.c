@@ -148,6 +148,29 @@ void test_1b() {
     string_(b, LEN); printf("))\n");
 }
 
+void test_1c() {
+    bigint a, b;
+    init(a, LEN);
+    init(b, LEN);
+
+    int64_t c[MLEN];
+    init(c, MLEN);
+
+    int i;
+    for (i = 0; i < LEN; ++i) {
+        a[i] = 9;
+    }
+    b[0]=2;
+
+
+
+    mul_refined_karatsuba(c, a, b);
+
+    // c - ((a) * (b))
+    string_(c, MLEN); printf(" - (("); string_(a, LEN); printf(") * (");
+    string_(b, LEN); printf("))\n");
+}
+
 void runAllTest(){
     if (!test_multprec()){
         printf("Test 1 passed !");
@@ -160,6 +183,9 @@ void runAllTest(){
 
     printf("\n\n\ntest_1b\n");
     test_1b();
+
+    printf("\n\n\ntest_1c\n");
+    test_1c();
 
     printf("\n\n\ntest_1d\n");
     test_1d();

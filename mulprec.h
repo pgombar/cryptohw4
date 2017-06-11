@@ -19,6 +19,8 @@ void mul_prodscan(int64_t r[MLEN], const bigint x, const bigint y);
 
 void mul_karatsuba(int64_t r[MLEN], const bigint x, const bigint y);
 
+void mul_refined_karatsuba(int64_t r[MLEN], const bigint x, const bigint y);
+
 void mod_reduction(int64_t r[MLEN]);
 
 void carry(int64_t r[MLEN]);

@@ -100,6 +100,7 @@ void carry(int64_t r[MLEN]) {
     }
 }
 
+//(b)
 void mul_karatsuba(int64_t r[MLEN], const bigint x, const bigint y) {
     const int m = LEN/2;
 
@@ -156,6 +157,75 @@ void mul_karatsuba(int64_t r[MLEN], const bigint x, const bigint y) {
 
     addition(r, firstMul, secondMul, MLEN);
     addition(r, r, thirdMul, MLEN);
+}
+
+void mul_refined_karatsuba(int64_t r[MLEN], const bigint x, const bigint y) {
+    const int m = LEN/2;
+
+    bigint x_0, x_1, y_0, y_1;
+
+    //Initialization
+    init(x_0, LEN);
+    init(x_1, LEN);
+    init(y_0, LEN);
+    init(y_1, LEN);
+
+    //Construction of our bigint
+    int i;
+    for (i = 0; i < m; ++i) {
+        x_0[i] = x[i];
+        y_0[i] = y[i];
+    }
+
+    int j;
+    for (j = m; j < LEN; ++j) {
+        x_1[j - m] = x[j];
+        y_1[j - m] = y[j];
+    }
+
+    int64_t L[MLEN];
+    int64_t M[MLEN];
+    int64_t H[MLEN];
+    int64_t H_prime[MLEN];
+    init(L, MLEN);
+    init(M, MLEN);
+    init(H, MLEN);
+    init(H_prime, MLEN);
+
+    mul_prodscan(L, x_0, y_0);
+    bigint l_0;
+    init(l_0, LEN);
+    int l;
+    for (l = 0; l < LEN/2; ++l) {
+        l_0[l] = L[l];
+    }
+
+    mul_prodscan(H, x_1, y_1);
+
+    int k;
+    for (k = 0; k < MLEN; ++k) {
+        H_prime[i] = H[i];
+    }
+    addition(H_prime, H_prime, l_0, LEN);
+
+    bigint firstSubstraction;
+    bigint secondSubstraction;
+    init(firstSubstraction, LEN);
+    init(secondSubstraction, LEN);
+
+    substraction(firstSubstraction, x_0, x_1, LEN);
+    substraction(secondSubstraction, y_0, y_1, LEN);
+
+    mul_prodscan(M, firstSubstraction, secondSubstraction);
+    absolute(M, MLEN);
+
+    substraction(H_prime, H_prime, M, MLEN);
+
+    shift(H_prime, m);
+    shift(H, 2*m);
+
+    addition(r, H, H_prime, MLEN);
+    addition(r, r, L, MLEN);
 }
 
 int main(void) {

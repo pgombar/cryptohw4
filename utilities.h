@@ -26,4 +26,6 @@ void addition(int64_t *r, const int64_t *x, const int64_t *y, int size);
 
 void shift(int64_t *x, int index);
 
+void absolute(int64_t *x, int size);
+
 #endif //CRYPTOHW4_UTILITIES_H

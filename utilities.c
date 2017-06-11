@@ -90,3 +90,15 @@ void shift(int64_t *x, int index) {
         x[j] = 0;
     }
 }
+
+void absolute(int64_t *x, int size) {
+    int i;
+    for (i = size; i >= 0; --i) {
+        if (x[i] != 0){
+            if (x[i] < 0){
+                x[i] *= -1;
+            }
+            break;
+        }
+    }
+}

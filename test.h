@@ -18,6 +18,8 @@ void test_1d();
 
 void test_1b();
 
+void test_1c();
+
 void test1_e();
 
 //Will run all our tests
