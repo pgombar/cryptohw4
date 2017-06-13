@@ -1,10 +1,8 @@
 #include <inttypes.h>
 #include <stdio.h>
-#include <math.h>
 #include "mulprec.h"
 #include "test.h"
 #include "utilities.h"
-
 
 //(a)
 void mul_prodscan(int64_t r[MLEN], const bigint x, const bigint y) {
@@ -193,33 +191,45 @@ void mul_refined_karatsuba(int64_t r[MLEN], const bigint x, const bigint y) {
     init(H_prime, MLEN);
 
     mul_prodscan(L, x_0, y_0);
-    bigint l_0;
-    init(l_0, LEN);
-    int l;
-    for (l = 0; l < LEN/2; ++l) {
-        l_0[l] = L[l];
-    }
+
+    reduce(L, MLEN);
 
     mul_prodscan(H, x_1, y_1);
 
     int k;
     for (k = 0; k < MLEN; ++k) {
-        H_prime[i] = H[i];
+        H_prime[k] = H[k];
     }
-    addition(H_prime, H_prime, l_0, LEN);
+    addition(H_prime, H_prime, L, LEN);
 
     bigint firstSubstraction;
     bigint secondSubstraction;
     init(firstSubstraction, LEN);
     init(secondSubstraction, LEN);
 
+    int firstWasNeg = 0;
+    int secondWasNeg = 0;
+
     substraction(firstSubstraction, x_0, x_1, LEN);
+    if (isNeg(firstSubstraction, LEN)){
+        firstWasNeg = 1;
+        substraction(firstSubstraction, x_1, x_0, LEN);
+    }
     substraction(secondSubstraction, y_0, y_1, LEN);
+    if (isNeg(secondSubstraction, LEN)){
+        secondWasNeg = 1;
+        substraction(secondSubstraction, y_1, y_0, LEN);
+    }
 
     mul_prodscan(M, firstSubstraction, secondSubstraction);
-    absolute(M, MLEN);
+    reduce(M, MLEN);
 
-    substraction(H_prime, H_prime, M, MLEN);
+    //add a condition
+    if ((firstWasNeg && secondWasNeg) || (!firstSubstraction && !secondWasNeg)){
+        substraction(H_prime, H_prime, M, MLEN);
+    } else{
+        addition(H_prime, H_prime, M, MLEN);
+    }
 
     shift(H_prime, m);
     shift(H, 2*m);

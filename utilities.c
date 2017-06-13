@@ -57,9 +57,12 @@ void substraction(bigint r, const bigint x, const bigint y, int size) {
     //carries
     int j;
     for (j = 0; j < size - 1; ++j) {
+        int test = r[j];
         if (r[j] < 0){
-            r[j + 1] -= 1;
-            r[j] += BASE;
+            while (r[j] < 0){
+                r[j + 1] -= 1;
+                r[j] += BASE;
+            }
         }
     }
 }
@@ -91,14 +94,28 @@ void shift(int64_t *x, int index) {
     }
 }
 
-void absolute(int64_t *x, int size) {
+int isNeg(int64_t *x, int size) {
+    int isNeg = 0;
     int i;
-    for (i = size; i >= 0; --i) {
+    for (i = size - 1; i >= 0; --i) {
         if (x[i] != 0){
             if (x[i] < 0){
-                x[i] *= -1;
+                isNeg = 1;
             }
             break;
+        }
+    }
+    return isNeg;
+}
+
+void reduce(int64_t *x, int size){
+    int i;
+    for (i = 0; i < size - 1; ++i) {
+        if (x[i] >= BASE){
+            while (x[i] >= BASE){
+                x[i+1]++;
+                x[i] -= BASE;
+            }
         }
     }
 }

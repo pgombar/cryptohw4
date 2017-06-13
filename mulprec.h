@@ -9,7 +9,7 @@
 
 #define LEN 14
 #define MLEN 27
-#define BASE 10
+#define BASE 10 //2^16
 
 /* 256-bit integers in radix 2^16 */
 typedef int64_t bigint[LEN]; // 14*16 = 224

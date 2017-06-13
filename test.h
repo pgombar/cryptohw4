@@ -8,19 +8,15 @@
 #include <stdint.h>
 #include "mulprec.h"
 
-//Test of our multiplication
-//Return 0 if it passed
-int test_multprec();
+void test_1a(bigint a, bigint b, uint64_t c[MLEN]);
 
-void test_1a();
+void test_1b(bigint a, bigint b, uint64_t c[MLEN]);
 
-void test_1d();
+void test_1c(bigint a, bigint b, uint64_t c[MLEN]);
 
-void test_1b();
+void test_1d(bigint a, bigint b, uint64_t c[MLEN]);
 
-void test_1c();
-
-void test1_e();
+void test1_e(bigint a, bigint b, uint64_t c[MLEN]);
 
 //Will run all our tests
 void runAllTest();
