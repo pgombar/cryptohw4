@@ -138,14 +138,19 @@ void mul_karatsuba(int64_t r[MLEN], const bigint x, const bigint y) {
     init(firstAddition, LEN);
     init(secondAddition, LEN);
 
+    //We calculate A_o + A_1 and B_0 + B_1
     addition(firstAddition, x_0, x_1, LEN);
     addition(secondAddition, y_0, y_1, LEN);
 
+    //(A_o + A_1)(B_0 + B_1)
     mul_prodscan(secondMul, firstAddition, secondAddition);
 
+    //First term of the final addition
     mul_prodscan(firstMul, x_0, y_0);
+    //Third term of the final addition
     mul_prodscan(thirdMul, x_1, y_1);
 
+    //Second term of the final addition : (A_o + A_1)(B_0 + B_1) - A_0*A_1 - B_0*B_1
     substraction(secondMul, secondMul, firstMul, MLEN);
     substraction(secondMul, secondMul, thirdMul, MLEN);
 
@@ -153,6 +158,7 @@ void mul_karatsuba(int64_t r[MLEN], const bigint x, const bigint y) {
     shift(secondMul, m);
     shift(thirdMul, 2*m);
 
+    //Final addition r = first + second + third
     addition(r, firstMul, secondMul, MLEN);
     addition(r, r, thirdMul, MLEN);
 }
@@ -190,16 +196,20 @@ void mul_refined_karatsuba(int64_t r[MLEN], const bigint x, const bigint y) {
     init(H, MLEN);
     init(H_prime, MLEN);
 
+    //Construction of L
     mul_prodscan(L, x_0, y_0);
-
     reduce(L, MLEN);
 
+    //Construction of H
     mul_prodscan(H, x_1, y_1);
 
+    //H' = H + L
+    //So we copy H into H'
     int k;
     for (k = 0; k < MLEN; ++k) {
         H_prime[k] = H[k];
     }
+    //Then we add L
     addition(H_prime, H_prime, L, LEN);
 
     bigint firstSubstraction;
@@ -207,6 +217,7 @@ void mul_refined_karatsuba(int64_t r[MLEN], const bigint x, const bigint y) {
     init(firstSubstraction, LEN);
     init(secondSubstraction, LEN);
 
+    //We use tests to know if we need to compute M' = -M or not
     int firstWasNeg = 0;
     int secondWasNeg = 0;
 
@@ -224,16 +235,22 @@ void mul_refined_karatsuba(int64_t r[MLEN], const bigint x, const bigint y) {
     mul_prodscan(M, firstSubstraction, secondSubstraction);
     reduce(M, MLEN);
 
-    //add a condition
+    //M = M' so we make the substraction H' = H' - M
     if ((firstWasNeg && secondWasNeg) || (!firstSubstraction && !secondWasNeg)){
         substraction(H_prime, H_prime, M, MLEN);
-    } else{
+    }
+    //M' = M
+    //So we compute H' = H' - (-M), so H' = H' + M
+    else{
         addition(H_prime, H_prime, M, MLEN);
     }
 
+    //We compute H' = Base^m * H'
     shift(H_prime, m);
+    //We compute H = Base^(2*m) * H
     shift(H, 2*m);
 
+    //Finally, our result r = H + H' + L
     addition(r, H, H_prime, MLEN);
     addition(r, r, L, MLEN);
 }
