@@ -80,24 +80,6 @@ void mul_prodscan(int64_t r[MLEN], const bigint x, const bigint y) {
     r[26] = x[13] * y[13];
 }
 
-//(d)
-// modular reduction: 3 * 2^3 = 24 (like slide 4 from ecc.pdf)
-void mod_reduction(int64_t r[MLEN]) {
-    int i;
-    for (i = 0; i < LEN-1; i++) r[i] += 24 * r[i+LEN];
-}
-
-//(e)
-void carry(int64_t r[MLEN]) {
-    int i;
-    for (i = 0; i < MLEN-2; i++) {
-        int64_t prev_carry = r[i] >> LEN; 
-        int shift = sizeof(int64_t)*8 - LEN;
-        r[i] = r[i] << shift >> shift; // clear all but the first 16 bits
-        r[i+1] += prev_carry;
-    }
-}
-
 //(b)
 void mul_karatsuba(int64_t r[MLEN], const bigint x, const bigint y) {
     const int m = LEN/2;
@@ -163,6 +145,7 @@ void mul_karatsuba(int64_t r[MLEN], const bigint x, const bigint y) {
     addition(r, r, thirdMul, MLEN);
 }
 
+//(c)
 void mul_refined_karatsuba(int64_t r[MLEN], const bigint x, const bigint y) {
     const int m = LEN/2;
 
@@ -239,8 +222,8 @@ void mul_refined_karatsuba(int64_t r[MLEN], const bigint x, const bigint y) {
     if ((firstWasNeg && secondWasNeg) || (!firstSubstraction && !secondWasNeg)){
         substraction(H_prime, H_prime, M, MLEN);
     }
-    //M' = M
-    //So we compute H' = H' - (-M), so H' = H' + M
+        //M' = M
+        //So we compute H' = H' - (-M), so H' = H' + M
     else{
         addition(H_prime, H_prime, M, MLEN);
     }
@@ -253,6 +236,24 @@ void mul_refined_karatsuba(int64_t r[MLEN], const bigint x, const bigint y) {
     //Finally, our result r = H + H' + L
     addition(r, H, H_prime, MLEN);
     addition(r, r, L, MLEN);
+}
+
+//(d)
+// modular reduction: 3 * 2^3 = 24 (like slide 4 from ecc.pdf)
+void mod_reduction(int64_t r[MLEN]) {
+    int i;
+    for (i = 0; i < LEN-1; i++) r[i] += 24 * r[i+LEN];
+}
+
+//(e)
+void carry(int64_t r[MLEN]) {
+    int i;
+    for (i = 0; i < MLEN-2; i++) {
+        int64_t prev_carry = r[i] >> LEN;
+        int shift = sizeof(int64_t)*8 - LEN;
+        r[i] = r[i] << shift >> shift; // clear all but the first 16 bits
+        r[i+1] += prev_carry;
+    }
 }
 
 int main(void) {

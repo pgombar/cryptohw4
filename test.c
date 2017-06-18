@@ -61,9 +61,8 @@ void test1_e(bigint a, bigint b, uint64_t c[MLEN]) {
     for (i = 0; i < MLEN; i++) {
         if (bit_degree(c[i]) >= 17) flag = 0;
     }
-    printf("%d\n", 1 - flag);
-    // TODO: add check for 20 bits for a and b (isn't it only up to 16 bits?)
-    // printf("%s\n", flag ? "TRUE" : "FALSE");
+
+     printf("%s\n", flag ? "TRUE" : "FALSE");
 }
 
 void runAllTest(){
@@ -78,8 +77,8 @@ void runAllTest(){
     for (i = 0; i < LEN; ++i) {
         a[i] = 9;
     }
-    a[0] = 2; a[1] = 3; a[2] = 4; // 99 999 999 999 432
-    b[0] = 5; b[1] = 8; b[2] = 2; // 88 888 888 888 285
+    a[0] = 2; a[1] = 3; a[2] = 4; //  a = 99 999 999 999 432 in radix 10
+    b[0] = 5; b[1] = 8; b[2] = 2; // b = 88 888 888 888 285 in radix 10
 
     printf("\n\n\ntest_1a\n");
     test_1a(a, b, c);
