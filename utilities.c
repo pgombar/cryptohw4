@@ -67,7 +67,7 @@ void substraction(bigint r, const bigint x, const bigint y, int size) {
     }
 }
 
-void addition(int64_t *r, const int64_t *x, const int64_t *y, int size) {
+void addition(int64_t r[MLEN], const int64_t *x, const int64_t *y, int size) {
     int k;
     for (k = 0; k < size; ++k) {
         r[k] = x[k] + y[k];
@@ -77,8 +77,9 @@ void addition(int64_t *r, const int64_t *x, const int64_t *y, int size) {
     int l;
     for (l = 1; l < size ; ++l) {
         r[l] += r[l - 1] >> LEN;
-        int shift = sizeof(int64_t)*8 - LEN;
-        r[l - 1] = r[l - 1] << shift >> shift;
+        while (r[l - 1] >= BASE){
+            r[l - 1] -= BASE;
+        }
     }
 }
 

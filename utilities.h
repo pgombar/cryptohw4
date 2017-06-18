@@ -22,7 +22,7 @@ void interpret_(const int64_t *x);
 
 void substraction(bigint r, const int64_t *x, const int64_t *y, int size);
 
-void addition(int64_t *r, const int64_t *x, const int64_t *y, int size);
+void addition(int64_t r[MLEN], const int64_t *x, const int64_t *y, int size);
 
 void shift(int64_t *x, int index);
 

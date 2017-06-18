@@ -126,11 +126,14 @@ void mul_karatsuba(int64_t r[MLEN], const bigint x, const bigint y) {
 
     //(A_o + A_1)(B_0 + B_1)
     mul_prodscan(secondMul, firstAddition, secondAddition);
+    reduce(secondMul, MLEN);
 
     //First term of the final addition
     mul_prodscan(firstMul, x_0, y_0);
+    reduce(firstMul, MLEN);
     //Third term of the final addition
     mul_prodscan(thirdMul, x_1, y_1);
+    reduce(thirdMul, MLEN);
 
     //Second term of the final addition : (A_o + A_1)(B_0 + B_1) - A_0*A_1 - B_0*B_1
     substraction(secondMul, secondMul, firstMul, MLEN);
@@ -143,6 +146,7 @@ void mul_karatsuba(int64_t r[MLEN], const bigint x, const bigint y) {
     //Final addition r = first + second + third
     addition(r, firstMul, secondMul, MLEN);
     addition(r, r, thirdMul, MLEN);
+    reduce(r, MLEN);
 }
 
 //(c)
@@ -243,6 +247,10 @@ void mul_refined_karatsuba(int64_t r[MLEN], const bigint x, const bigint y) {
 void mod_reduction(int64_t r[MLEN]) {
     int i;
     for (i = 0; i < LEN-1; i++) r[i] += 24 * r[i+LEN];
+    int j;
+    for (j = LEN - 1; j < MLEN; ++j) {
+        r[j] = 0;
+    }
 }
 
 //(e)
@@ -250,8 +258,9 @@ void carry(int64_t r[MLEN]) {
     int i;
     for (i = 0; i < MLEN-2; i++) {
         int64_t prev_carry = r[i] >> LEN;
-        int shift = sizeof(int64_t)*8 - LEN;
-        r[i] = r[i] << shift >> shift; // clear all but the first 16 bits
+        while (r[i] >= BASE){
+            r[i] -= BASE;
+        }
         r[i+1] += prev_carry;
     }
 }
