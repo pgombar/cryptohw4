@@ -145,6 +145,7 @@ void mul_karatsuba(int64_t r[MLEN], const bigint x, const bigint y) {
 
     //Final addition r = first + second + third
     addition(r, firstMul, secondMul, MLEN);
+    int64_t test = r[5];
     addition(r, r, thirdMul, MLEN);
     reduce(r, MLEN);
 }

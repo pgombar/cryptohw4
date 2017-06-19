@@ -37,7 +37,6 @@ void string_(const int64_t *x, int SIZE) {
             printf(" + ");
         }
     }
-    // printf("\n");
 }
 
 void interpret_(const int64_t *x) {
@@ -76,7 +75,7 @@ void addition(int64_t r[MLEN], const int64_t *x, const int64_t *y, int size) {
     //carries
     int l;
     for (l = 1; l < size ; ++l) {
-        r[l] += r[l - 1] >> LEN;
+        r[l] += r[l - 1] >> 16; //Because we are using 16bits per limb
         while (r[l - 1] >= BASE){
             r[l - 1] -= BASE;
         }
